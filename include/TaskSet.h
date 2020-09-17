@@ -1,13 +1,9 @@
-#ifndef TASK_SET
-#define TASK_SET
+#ifndef TASK_SET_H
+#define TASK_SET_H
 
 #include "Task.h"
-#include "map"
+#include "RateMonotonic.h"
 #include "vector"
-#include "cmath"
-#include "algorithm"
-#include <functional>
-#include <set>
 
 #define RATE_MONOTONIC          0
 #define DEADLINE_MONOTONIC      1
