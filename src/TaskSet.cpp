@@ -68,20 +68,10 @@ void TaskSet::schedule(int scheduler) {
 }
 
 void TaskSet::compute_priorities(int scheduler) {
-    int max_priority = m_number_of_tasks;
-    typedef std::function<bool(std::pair<const char*, Task>, std::pair<const char*, Task>)> Comparator;
 
     if (scheduler == RATE_MONOTONIC) {
-        Comparator compFunctor = [](std::pair<const char*, Task> tsk1, std::pair<const char*, Task> tsk2) {
-            return tsk1.second.get_period() < tsk2.second.get_period();
-        };
-
-        std::set<std::pair<const char*, Task>, Comparator> task_set(m_tasks.begin(), m_tasks.end(), compFunctor);
-
-        for (auto it = task_set.cbegin(); it != task_set.cend(); it++) {
-            (m_tasks.at(it->second.name)).set_priority(max_priority);
-            --max_priority;
-        }
+        RateMonotonic rm = RateMonotonic();
+        m_tasks = rm.prioritize(m_tasks);
     } else if (scheduler == DEADLINE_MONOTONIC) {
         std::cout << "Scheduler not supported yet" << std::endl;
     } else {
