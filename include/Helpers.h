@@ -28,4 +28,17 @@ static int findlcm(int arr[])
     return ans; 
 } 
 
+static void print_task_vector(std::vector<const char*> const &input) {
+    std::cout << "job == ";
+    int i = 0;
+    for (auto elem : input) {
+        if (i != input.size() - 1) {
+            printf("%s(%d) ->", elem, i);
+        } else {
+            printf("%s(%d)", elem, i);
+        }
+        i++;
+    }
+}
+
 #endif //HELPER_H
