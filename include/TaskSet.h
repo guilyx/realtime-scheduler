@@ -1,7 +1,6 @@
 #ifndef TASK_SET_H
 #define TASK_SET_H
 
-#include "Task.h"
 #include "RateMonotonic.h"
 #include "vector"
 
@@ -20,10 +19,13 @@ class TaskSet {
         int get_number_of_tasks() const;
     private:
         std::map<const char*, Task> m_tasks;
-        std::vector<const char*> time_table;
+        std::vector<Task> m_time_table;
         int m_number_of_tasks;
+        int m_hyper_period;
         void compute_priorities(int scheduler);
+        void compute_time_table();
         bool compute_sufficient_condition(int scheduler);
+        void compute_hyper_period();
 };
 
 #endif // TaskSet

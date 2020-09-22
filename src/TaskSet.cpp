@@ -7,6 +7,7 @@ void TaskSet::register_task(Task tsk) {
         // Task not registered, free to go
         m_tasks.insert(std::pair<const char*, Task>(tsk.name, tsk));
         ++m_number_of_tasks;
+        this->compute_hyper_period();
         printf("Task <%s> has been registered.\n", tsk.name);
     } else {
         // Task already registered
@@ -22,8 +23,19 @@ void TaskSet::remove_task(const char* task_id) {
         // Task already registered
         m_tasks.erase(task_id);
         --m_number_of_tasks;
+        this->compute_hyper_period();
         printf("Task <%s> has been removed\n", task_id);
     }   
+}
+
+void TaskSet::compute_hyper_period() {
+    int hyper_periods[m_number_of_tasks];
+    int i = 0;
+    for (auto const& [key, val] : m_tasks) {
+        hyper_periods[i] = val.get_period();
+        ++i;
+    }
+    m_hyper_period = findlcm(hyper_periods);
 }
 
 std::map<const char*, Task> TaskSet::get_task_set() const {
@@ -36,6 +48,7 @@ int TaskSet::get_number_of_tasks() const {
 
 void TaskSet::print_task_set() {
     printf("==Task Set==\n");
+    printf("hyperperiod = %d\n", m_hyper_period);
     for (auto it = m_tasks.cbegin(); it != m_tasks.cend(); ++it) {
         (it->second).print_task();
     }
@@ -67,8 +80,34 @@ void TaskSet::schedule(int scheduler) {
     }
 }
 
-void TaskSet::compute_priorities(int scheduler) {
+void TaskSet::compute_time_table() {
+    std::set<std::pair<const char*, Task>, Comparator> task_set(m_tasks.begin(), m_tasks.end(), compFunctor);
+    int tim = 0;
+    std::set<std::pair<const char*, Task>>::iterator iter = task_set.begin();
+    int current_process;
+    for (auto elem : task_set) {
+        elem.second.set_execution_time(0);
+        elem.second.set_ready(true);
+        elem.second.set_arrival_time(tim);
+        elem.second.set_absolute_deadline(elem.second.get_arrival_time() + elem.second.get_period());
+    }
+    while (tim < m_hyper_period) {
+        current_process = 0;
+        Task current_task("", 0, 0, 0, 0);
+        for (auto elem : task_set) {
+            if (elem.second.get_ready() && elem.second.get_arrival_time() <= tim) {
+                current_process++;
+                break;
+            }
+        }
 
+        if (current_process > -1) {
+            task_set.
+        }
+    }
+}
+
+void TaskSet::compute_priorities(int scheduler) {
     if (scheduler == RATE_MONOTONIC) {
         RateMonotonic rm = RateMonotonic();
         m_tasks = rm.prioritize(m_tasks);
