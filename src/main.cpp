@@ -14,5 +14,4 @@ int main()
     job.remove_task("t3");
     job.print_task_set();
     job.schedule(RATE_MONOTONIC);
-    job.print_task_set();
 }

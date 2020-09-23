@@ -16,6 +16,17 @@ class Task {
         int get_priority() const;
         double get_utilization() const;
 
+        bool get_ready() const;
+        const void set_ready(bool r);
+        int get_execution_time() const;
+        const void set_execution_time(int ex_t);
+
+        int get_arrival_time() const;
+        const void set_arrival_time(int at);
+
+        int get_absolute_deadline() const;
+        const void set_absolute_deadline(int ad);
+
         const void set_priority(int p);
         void print_task() const;
 
@@ -25,6 +36,10 @@ class Task {
         int m_computation;
         int m_deadline;
         int m_priority = 0;
+        bool m_ready = false;
+        int m_execution_time;
+        int m_absolute_deadline;
+        int m_arrival_time;
         double m_utilization;
 };
 

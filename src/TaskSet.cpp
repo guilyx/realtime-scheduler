@@ -7,6 +7,7 @@ void TaskSet::register_task(Task tsk) {
         // Task not registered, free to go
         m_tasks.insert(std::pair<const char*, Task>(tsk.name, tsk));
         ++m_number_of_tasks;
+        this->compute_hyper_period();
         printf("Task <%s> has been registered.\n", tsk.name);
     } else {
         // Task already registered
@@ -22,8 +23,21 @@ void TaskSet::remove_task(const char* task_id) {
         // Task already registered
         m_tasks.erase(task_id);
         --m_number_of_tasks;
+        this->compute_hyper_period();
         printf("Task <%s> has been removed\n", task_id);
     }   
+}
+
+void TaskSet::compute_hyper_period() {
+    int hyper_periods[m_number_of_tasks];
+    int i = 0;
+    for (auto const& [key, val] : m_tasks) {
+        hyper_periods[i] = val.get_period();
+        ++i;
+    }
+    m_hyper_period = findlcm(hyper_periods);
+    std::vector<const char*> tempVec(m_hyper_period, "");
+    m_time_table = tempVec;
 }
 
 std::map<const char*, Task> TaskSet::get_task_set() const {
@@ -36,6 +50,7 @@ int TaskSet::get_number_of_tasks() const {
 
 void TaskSet::print_task_set() {
     printf("==Task Set==\n");
+    printf("hyperperiod = %d\n", m_hyper_period);
     for (auto it = m_tasks.cbegin(); it != m_tasks.cend(); ++it) {
         (it->second).print_task();
     }
@@ -65,13 +80,65 @@ void TaskSet::schedule(int scheduler) {
             std::cout << "Scheduler not supported yet" << std::endl;
             break;
     }
+    this->compute_time_table();
+}
+
+std::vector<const char*> TaskSet::get_time_table() const {
+    return m_time_table;
+}
+
+void TaskSet::compute_time_table() {
+    //Activations
+    for (int tsk=0; tsk<m_priority_vector.size(); ++tsk) {
+        std::vector<int> activations_rank;
+        std::vector<int> deactivation_rank;
+        for (int p=0; p<m_hyper_period; ++p) {
+            int period = p*m_priority_vector[tsk].get_period() + m_priority_vector[tsk].get_offset();
+            int deadline = p*m_priority_vector[tsk].get_deadline() + m_priority_vector[tsk].get_offset();
+            if (period > m_hyper_period) {
+                break;
+            }
+            activations_rank.push_back(period);
+            deactivation_rank.push_back(deadline);
+        }
+        for (auto elem: activations_rank) {
+            printf("ACTIVATED %s -> t = %d\r\n", m_priority_vector[tsk].name, elem);
+            if (m_time_table[elem] == "") {
+                for (int j=0; j<m_priority_vector[tsk].get_computation(); ++j) {
+                    if (elem + j > m_hyper_period) {
+                        break;
+                    }
+                    if (m_time_table[elem + j] == "") {
+                        m_time_table[elem + j] = m_priority_vector[tsk].name;
+                    } else {
+                        while (m_time_table[elem + j] != "") elem++;
+                        m_time_table[elem + j] = m_priority_vector[tsk].name;
+                    }
+                }
+            } else {
+                while (m_time_table[elem] != "") elem++;
+                for (int j=0; j<m_priority_vector[tsk].get_computation(); ++j) {
+                    if (elem + j > m_hyper_period) {
+                        break;
+                    }
+                    if (m_time_table[elem + j] == "") {
+                        m_time_table[elem + j] = m_priority_vector[tsk].name;
+                    } else {
+                        while (m_time_table[elem + j] != "") elem++;
+                        m_time_table[elem + j] = m_priority_vector[tsk].name;
+                    }
+                }
+            }
+        }
+        print_task_vector(m_time_table);
+    }
 }
 
 void TaskSet::compute_priorities(int scheduler) {
-
     if (scheduler == RATE_MONOTONIC) {
         RateMonotonic rm = RateMonotonic();
         m_tasks = rm.prioritize(m_tasks);
+        m_priority_vector = rm.get_prioritized_tasks();
     } else if (scheduler == DEADLINE_MONOTONIC) {
         std::cout << "Scheduler not supported yet" << std::endl;
     } else {
