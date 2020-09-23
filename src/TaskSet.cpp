@@ -93,8 +93,13 @@ void TaskSet::compute_time_table() {
         std::vector<int> activations_rank;
         std::vector<int> deactivation_rank;
         for (int p=0; p<m_hyper_period; ++p) {
-            activations_rank.push_back(p*m_priority_vector[tsk].get_period() + m_priority_vector[tsk].get_offset());
-            deactivation_rank.push_back(p*m_priority_vector[tsk].get_deadline() + m_priority_vector[tsk].get_offset());
+            int period = p*m_priority_vector[tsk].get_period() + m_priority_vector[tsk].get_offset();
+            int deadline = p*m_priority_vector[tsk].get_deadline() + m_priority_vector[tsk].get_offset();
+            if (period > m_hyper_period) {
+                break;
+            }
+            activations_rank.push_back(period);
+            deactivation_rank.push_back(deadline);
         }
         for (auto elem: activations_rank) {
             printf("ACTIVATED %s -> t = %d\r\n", m_priority_vector[tsk].name, elem);
@@ -105,10 +110,24 @@ void TaskSet::compute_time_table() {
                     }
                     if (m_time_table[elem + j] == "") {
                         m_time_table[elem + j] = m_priority_vector[tsk].name;
+                    } else {
+                        while (m_time_table[elem + j] != "") elem++;
+                        m_time_table[elem + j] = m_priority_vector[tsk].name;
                     }
                 }
             } else {
-                elem++;
+                while (m_time_table[elem] != "") elem++;
+                for (int j=0; j<m_priority_vector[tsk].get_computation(); ++j) {
+                    if (elem + j > m_hyper_period) {
+                        break;
+                    }
+                    if (m_time_table[elem + j] == "") {
+                        m_time_table[elem + j] = m_priority_vector[tsk].name;
+                    } else {
+                        while (m_time_table[elem + j] != "") elem++;
+                        m_time_table[elem + j] = m_priority_vector[tsk].name;
+                    }
+                }
             }
         }
         print_task_vector(m_time_table);
