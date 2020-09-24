@@ -151,3 +151,18 @@ bool TaskSet::compute_sufficient_condition(int scheduler) {
             return false;
     }
 }
+
+void TaskSet::print_schedule() const {
+    printf("\n==SCHEDULE==\n");
+    for ( auto &pair : m_tasks ) {
+        printf("%s | ", pair.first);
+        for ( auto &elem : m_time_table ) {
+            if (pair.first == elem) {
+                printf("█");
+            } else {
+                printf("_");
+            }
+        }
+        printf("\n");
+    }
+}
