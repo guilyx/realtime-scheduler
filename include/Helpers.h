@@ -35,7 +35,7 @@ static void print_task_vector(std::vector<const char*> const &input) {
         if (i != input.size() - 1) {
             printf("%s(%d) ->", elem, i);
         } else {
-            printf("%s(%d)", elem, i);
+            printf("%s(%d)\n", elem, i);
         }
         i++;
     }
