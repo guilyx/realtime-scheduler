@@ -102,32 +102,12 @@ void TaskSet::compute_time_table() {
             deactivation_rank.push_back(deadline);
         }
         for (auto elem: activations_rank) {
-            printf("ACTIVATED %s -> t = %d\r\n", m_priority_vector[tsk].name, elem);
-            if (m_time_table[elem] == "") {
-                for (int j=0; j<m_priority_vector[tsk].get_computation(); ++j) {
-                    if (elem + j > m_hyper_period) {
-                        break;
-                    }
-                    if (m_time_table[elem + j] == "") {
-                        m_time_table[elem + j] = m_priority_vector[tsk].name;
-                    } else {
-                        while (m_time_table[elem + j] != "") elem++;
-                        m_time_table[elem + j] = m_priority_vector[tsk].name;
-                    }
+            for (int j=0; j<m_priority_vector[tsk].get_computation(); ++j) {
+                while (m_time_table[elem+j] != "") elem++;
+                if (elem + j > m_hyper_period) {
+                    break;
                 }
-            } else {
-                while (m_time_table[elem] != "") elem++;
-                for (int j=0; j<m_priority_vector[tsk].get_computation(); ++j) {
-                    if (elem + j > m_hyper_period) {
-                        break;
-                    }
-                    if (m_time_table[elem + j] == "") {
-                        m_time_table[elem + j] = m_priority_vector[tsk].name;
-                    } else {
-                        while (m_time_table[elem + j] != "") elem++;
-                        m_time_table[elem + j] = m_priority_vector[tsk].name;
-                    }
-                }
+                m_time_table[elem + j] = m_priority_vector[tsk].name;
             }
         }
         print_task_vector(m_time_table);
