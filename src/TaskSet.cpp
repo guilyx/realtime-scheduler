@@ -68,6 +68,7 @@ void TaskSet::schedule(int scheduler) {
                 std::cout << "Priorities of the task set have been computed successfully." << std::endl;
             } else {
                 std::cout << "The current Task Set is not schedulable by RMS." << std::endl;
+                exit(1);
             }
             break;
         case DEADLINE_MONOTONIC:

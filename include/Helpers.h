@@ -45,7 +45,7 @@ static void print_task_vector(std::vector<const char*> const &input) {
 static void stream_schedule_to_file(std::vector<const char*> const &input, const char* filename) {
     std::ofstream myfile;
     char buf[30];
-    sprintf(buf, "../data/%s", filename);
+    sprintf(buf, "data/%s", filename);
     myfile.open(buf);
     for (auto elem : input) {
         myfile << elem;
