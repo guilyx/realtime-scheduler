@@ -81,6 +81,7 @@ void TaskSet::schedule(int scheduler) {
             break;
     }
     this->compute_time_table();
+    std::cout << "Schedule successfully computed." << std::endl;
 }
 
 std::vector<const char*> TaskSet::get_time_table() const {
@@ -88,7 +89,6 @@ std::vector<const char*> TaskSet::get_time_table() const {
 }
 
 void TaskSet::compute_time_table() {
-    //Activations
     for (int tsk=0; tsk<m_priority_vector.size(); ++tsk) {
         std::vector<int> activations_rank;
         std::vector<int> deactivation_rank;
@@ -110,7 +110,6 @@ void TaskSet::compute_time_table() {
                 m_time_table[elem + j] = m_priority_vector[tsk].name;
             }
         }
-        print_task_vector(m_time_table);
     }
 }
 
@@ -149,5 +148,20 @@ bool TaskSet::compute_sufficient_condition(int scheduler) {
         default:
             std::cout << "Scheduler not supported yet" << std::endl;
             return false;
+    }
+}
+
+void TaskSet::print_schedule() const {
+    printf("\n==SCHEDULE==\n");
+    for ( auto &pair : m_tasks ) {
+        printf("%s |", pair.first);
+        for ( auto &elem : m_time_table ) {
+            if (pair.first == elem) {
+                printf("█");
+            } else {
+                printf("_");
+            }
+        }
+        printf("\n");
     }
 }
