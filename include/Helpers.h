@@ -1,8 +1,9 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-#include <set>
-#include <functional>
+#include <fstream>
+#include <iostream>
+#include <string.h>
 #include "Task.h"
 
 static bool rateMonotonicSorter(Task tsk1, Task tsk2) {
@@ -38,6 +39,41 @@ static void print_task_vector(std::vector<const char*> const &input) {
             printf("%s(%d)\n", elem, i);
         }
         i++;
+    }
+}
+
+static void stream_schedule_to_file(std::vector<const char*> const &input, const char* filename) {
+    std::ofstream myfile;
+    char buf[30];
+    sprintf(buf, "../data/%s", filename);
+    myfile.open(buf);
+    for (auto elem : input) {
+        myfile << elem;
+        myfile << "\n";
+    }
+    myfile.close();
+}
+
+static wchar_t* GetWC(const char *c) {
+    const size_t c_size = strlen(c) + 1;
+    wchar_t* wc = new wchar_t[c_size];
+    mbstowcs(wc, c, c_size);
+    return wc;
+}
+
+static const wchar_t* GetConstWC(const char *c) {
+    const size_t c_size = strlen(c) + 1;
+    wchar_t* wc = new wchar_t[c_size];
+    mbstowcs(wc, c, c_size);
+    return wc;
+}
+
+static void plot_gantt_from_python(int argc, char *argv[]) {
+    char buffer[50];
+    sprintf(buffer, "python3 src/gantt.py --filename data/%s", argv[1]);
+    int x = system(buffer);
+    if (x != 0) {
+        std::cout << "Failure: python script didn't execute correctly" << std::endl;
     }
 }
 
