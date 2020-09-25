@@ -86,7 +86,7 @@ $ make
 $ cd ..
 ```
 
-2. Run the project : `./rt_sched "filename"
+2. Run the project : `./rt_sched "filename"`
 
 3. Python script documentation :
 
