@@ -77,3 +77,32 @@ void Task::print_task() const {
         printf("%s: {O = %d, C = %d, T = %d, D = %d, Prio = %d}\n", this->name, m_offset, m_computation, m_period, m_deadline, m_priority);
     }
 }
+
+TaskStatistics Task::get_statistics() const {
+    return m_statistics;
+}
+
+const void Task::set_average_response_time(double art) {
+    m_statistics.average_response_time = art;
+}
+
+const void Task::set_average_waiting_time(double awt) {
+    m_statistics.average_wait_time = awt;
+}
+
+const void Task::set_deadlines_missed(int dm) {
+    m_statistics.deadlines_missed = dm;
+}
+
+const void Task::set_first_deadline_missed_t(int fdmt) {
+    m_statistics.first_deadline_missed_t = fdmt;
+}
+
+const void Task::set_deadline_missed_average_t(double dmat) {
+    m_statistics.average_missed_deadline_t = dmat;
+}
+
+void Task::pretty_print_statistics() const {
+    printf("TASK <%s> STATISTICS : {\n\tAverage Response Time: %.2f\n\tAverage Wait Time: %.2f\n\tDeadline missed: %d\n\tTime of first missed deadline: %d\n}\n", 
+           this->name, m_statistics.average_response_time, m_statistics.average_wait_time, m_statistics.deadlines_missed, m_statistics.first_deadline_missed_t/*, m_statistics.average_missed_deadline_t*/);
+}

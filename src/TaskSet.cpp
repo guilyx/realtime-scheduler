@@ -10,17 +10,14 @@ void TaskSet::register_task(Task tsk) {
         this->compute_hyper_period();
         printf("Task <%s> has been registered.\n", tsk.name);
     } else {
-        // Task already registered
         std::cout << "Failed to register task: id already registered." << std::endl;
     }
 }
 
 void TaskSet::remove_task(const char* task_id) {
     if (m_tasks.find(task_id) == m_tasks.end()) {
-        // Task not registered, pass
         printf("Task <%s> has not been registered, failed to remove.\n", task_id);
     } else {
-        // Task already registered
         m_tasks.erase(task_id);
         --m_number_of_tasks;
         this->compute_hyper_period();
@@ -49,12 +46,14 @@ int TaskSet::get_number_of_tasks() const {
 }
 
 void TaskSet::print_task_set() {
-    printf("==Task Set==\n");
-    printf("hyperperiod = %d\n", m_hyper_period);
+    printf("=======================\n");
+    printf("TASK SET {\n");
+    printf("\thyperperiod = %d\n", m_hyper_period);
     for (auto it = m_tasks.cbegin(); it != m_tasks.cend(); ++it) {
+        printf("\t");
         (it->second).print_task();
     }
-    printf("============\n");
+    printf("}\n=======================\n");
 }
 
 void TaskSet::schedule(int scheduler) {
@@ -67,8 +66,16 @@ void TaskSet::schedule(int scheduler) {
                 this->compute_priorities(scheduler);
                 std::cout << "Priorities of the task set have been computed successfully." << std::endl;
             } else {
-                std::cout << "The current Task Set is not schedulable by RMS." << std::endl;
-                exit(1);
+                int yn;
+                std::cout << "The current Task Set is not schedulable by RMS. Do you still want to schedule it with RMS ? 1/0 --- "; 
+                std::cin >> yn;
+                if (yn == 1) {
+                    this->compute_priorities(scheduler);
+                    m_hyper_period = m_hyper_period*3;
+                    std::vector<const char*> tempVec(m_hyper_period, "");
+                    m_time_table = tempVec;
+                }
+                else exit(1);
             }
             break;
         case DEADLINE_MONOTONIC:
@@ -91,25 +98,63 @@ std::vector<const char*> TaskSet::get_time_table() const {
 
 void TaskSet::compute_time_table() {
     for (int tsk=0; tsk<m_priority_vector.size(); ++tsk) {
+        std::vector<int> response_time;
+        std::vector<int> waiting_time;
         std::vector<int> activations_rank;
         std::vector<int> deactivation_rank;
         for (int p=0; p<m_hyper_period; ++p) {
             int period = p*m_priority_vector[tsk].get_period() + m_priority_vector[tsk].get_offset();
-            int deadline = p*m_priority_vector[tsk].get_deadline() + m_priority_vector[tsk].get_offset();
+            int deadline = (p+1)*m_priority_vector[tsk].get_deadline() + m_priority_vector[tsk].get_offset();
             if (period > m_hyper_period) {
                 break;
             }
             activations_rank.push_back(period);
             deactivation_rank.push_back(deadline);
         }
+        int i = 0;
         for (auto elem: activations_rank) {
+            response_time.push_back(0);
+            waiting_time.push_back(0);
+            int init_activation = elem;
+            bool mutual_excl = false;
             for (int j=0; j<m_priority_vector[tsk].get_computation(); ++j) {
                 while (m_time_table[elem+j] != "") elem++;
                 if (elem + j > m_hyper_period) {
+                    response_time.pop_back();
+                    waiting_time.pop_back();
                     break;
+                }
+                if (j == 0) {
+                    waiting_time[i] = elem - init_activation;
+                    if (waiting_time[i] > m_priority_vector[tsk].get_deadline() && !mutual_excl) {
+                        m_tasks.at(m_priority_vector[tsk].name).set_deadlines_missed(m_tasks.at(m_priority_vector[tsk].name).get_statistics().deadlines_missed + 1);
+                        if (m_tasks.at(m_priority_vector[tsk].name).get_statistics().deadlines_missed == 1) {
+                            m_tasks.at(m_priority_vector[tsk].name).set_first_deadline_missed_t(deactivation_rank[i]);
+                        }
+                        mutual_excl = true;
+                    }
+                }
+                if (j == (m_priority_vector[tsk].get_computation() - 1)) {
+                    response_time[i] = elem + j - init_activation + 1;
+                    if (response_time[i] > m_priority_vector[tsk].get_deadline() && !mutual_excl) {
+                        m_tasks.at(m_priority_vector[tsk].name).set_deadlines_missed(m_tasks.at(m_priority_vector[tsk].name).get_statistics().deadlines_missed + 1);
+                        if (m_tasks.at(m_priority_vector[tsk].name).get_statistics().deadlines_missed == 1) {
+                            m_tasks.at(m_priority_vector[tsk].name).set_first_deadline_missed_t(deactivation_rank[i]);
+                        }
+                        mutual_excl = true;
+                    }
                 }
                 m_time_table[elem + j] = m_priority_vector[tsk].name;
             }
+            ++i;
+        }
+        if (response_time.size() != 0) {
+            double art = std::accumulate(response_time.begin(), response_time.end(), 0) / response_time.size();
+            m_tasks.at(m_priority_vector[tsk].name).set_average_response_time(art);
+        }
+        if (waiting_time.size() != 0) {
+            double awt = std::accumulate(waiting_time.begin(), waiting_time.end(), 0) / waiting_time.size();
+            m_tasks.at(m_priority_vector[tsk].name).set_average_waiting_time(awt);
         }
     }
 }
@@ -152,6 +197,14 @@ bool TaskSet::compute_sufficient_condition(int scheduler) {
     }
 }
 
+void TaskSet::print_statistics() const {
+    printf("=======================\n");
+    for (auto &pair : m_tasks) {
+        pair.second.pretty_print_statistics();
+    }
+    printf("=======================\n");
+}
+
 void TaskSet::print_schedule() const {
     printf("\n==SCHEDULE==\n");
     for ( auto &pair : m_tasks ) {
@@ -166,3 +219,4 @@ void TaskSet::print_schedule() const {
         printf("\n");
     }
 }
+

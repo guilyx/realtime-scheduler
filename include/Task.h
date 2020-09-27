@@ -5,6 +5,14 @@
 #include <iostream>
 #include <string>
 
+typedef struct {
+    double average_response_time;
+    double average_wait_time;
+    int deadlines_missed = 0;
+    int first_deadline_missed_t = 0;
+    double average_missed_deadline_t = 0;
+} TaskStatistics;
+
 class Task {
     public:
         Task(const char* name, int offset, int period, int computation, int deadline);
@@ -30,6 +38,15 @@ class Task {
         const void set_priority(int p);
         void print_task() const;
 
+        TaskStatistics get_statistics() const;
+        const void set_average_response_time(double art);
+        const void set_average_waiting_time(double awt);
+        const void set_deadlines_missed(int dm);
+        const void set_first_deadline_missed_t(int fdmt);
+        const void set_deadline_missed_average_t(double dmat);
+
+        void pretty_print_statistics() const;
+
     private:
         int m_offset;
         int m_period;
@@ -41,6 +58,7 @@ class Task {
         int m_absolute_deadline;
         int m_arrival_time;
         double m_utilization;
+        TaskStatistics m_statistics;
 };
 
 #endif //TASK_H

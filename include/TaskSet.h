@@ -3,6 +3,7 @@
 
 #include "RateMonotonic.h"
 #include "vector"
+#include <numeric>
 
 #define RATE_MONOTONIC          0
 #define DEADLINE_MONOTONIC      1
@@ -19,6 +20,8 @@ class TaskSet {
         int get_number_of_tasks() const;
         std::vector<const char*> get_time_table() const;
         void print_schedule() const;
+        void print_statistics() const;
+
     private:
         std::map<const char*, Task> m_tasks;
         std::vector<const char*> m_time_table;
