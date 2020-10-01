@@ -8,20 +8,20 @@ void TaskSet::register_task(Task tsk) {
         m_tasks.insert(std::pair<const char*, Task>(tsk.name, tsk));
         ++m_number_of_tasks;
         this->compute_hyper_period();
-        printf("Task <%s> has been registered.\n", tsk.name);
+        printf("%sTask <%s> has been registered.\n%s", BOLDGREEN, tsk.name, RESET);
     } else {
-        std::cout << "Failed to register task: id already registered." << std::endl;
+        std::cout << BOLDRED << "Failed to register task: id already registered." << RESET << std::endl;
     }
 }
 
 void TaskSet::remove_task(const char* task_id) {
     if (m_tasks.find(task_id) == m_tasks.end()) {
-        printf("Task <%s> has not been registered, failed to remove.\n", task_id);
+        printf("%sTask <%s> has not been registered, failed to remove.\n%s", BOLDRED, task_id, RESET);
     } else {
         m_tasks.erase(task_id);
         --m_number_of_tasks;
         this->compute_hyper_period();
-        printf("Task <%s> has been removed\n", task_id);
+        printf("%sTask <%s> has been removed\n%s", BOLDGREEN, task_id, RESET);
     }   
 }
 
@@ -46,28 +46,28 @@ int TaskSet::get_number_of_tasks() const {
 }
 
 void TaskSet::print_task_set() {
-    printf("=======================\n");
+    printf("%s=======================\n", BOLDWHITE);
     printf("TASK SET {\n");
-    printf("\thyperperiod = %d\n", m_hyper_period);
+    printf("%s\thyperperiod = %d\n", BOLDBLUE, m_hyper_period);
     for (auto it = m_tasks.cbegin(); it != m_tasks.cend(); ++it) {
         printf("\t");
         (it->second).print_task();
     }
-    printf("}\n=======================\n");
+    printf("%s}\n=======================\n%s", RESET, RESET);
 }
 
 void TaskSet::schedule(int scheduler) {
-    std::cout << "Scheduling the tasks..." << std::endl;
+    std::cout << BOLDYELLOW << "Scheduling the tasks..." << RESET << std::endl;
     bool ok;
     switch(scheduler) {
         case RATE_MONOTONIC:
             ok = this->compute_sufficient_condition(scheduler);
             if (ok) {
                 this->compute_priorities(scheduler);
-                std::cout << "Priorities of the task set have been computed successfully." << std::endl;
+                std::cout << BOLDGREEN << "Priorities of the task set have been computed successfully." << RESET << std::endl;
             } else {
                 int yn;
-                std::cout << "The current Task Set is not schedulable by RMS. Do you still want to schedule it with RMS ? 1/0 --- "; 
+                std::cout << BOLDRED << "The current Task Set is not schedulable by RMS. Do you still want to schedule it with RMS ? 1/0 --- " << RESET; 
                 std::cin >> yn;
                 if (yn == 1) {
                     this->compute_priorities(scheduler);
@@ -89,7 +89,7 @@ void TaskSet::schedule(int scheduler) {
             break;
     }
     this->compute_time_table();
-    std::cout << "Schedule successfully computed." << std::endl;
+    std::cout << BOLDGREEN << "Schedule successfully computed." << RESET << std::endl;
 }
 
 std::vector<const char*> TaskSet::get_time_table() const {
@@ -198,11 +198,11 @@ bool TaskSet::compute_sufficient_condition(int scheduler) {
 }
 
 void TaskSet::print_statistics() const {
-    printf("=======================\n");
+    printf("%s=======================%s\n", BOLDBLUE, RESET);
     for (auto &pair : m_tasks) {
         pair.second.pretty_print_statistics();
     }
-    printf("=======================\n");
+    printf("%s=======================%s\n", BOLDBLUE, RESET);
 }
 
 void TaskSet::print_schedule() const {

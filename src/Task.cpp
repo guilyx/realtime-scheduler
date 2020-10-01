@@ -103,6 +103,6 @@ const void Task::set_deadline_missed_average_t(double dmat) {
 }
 
 void Task::pretty_print_statistics() const {
-    printf("TASK <%s> STATISTICS : {\n\tAverage Response Time: %.2f\n\tAverage Wait Time: %.2f\n\tDeadline missed: %d\n\tTime of first missed deadline: %d\n}\n", 
-           this->name, m_statistics.average_response_time, m_statistics.average_wait_time, m_statistics.deadlines_missed, m_statistics.first_deadline_missed_t/*, m_statistics.average_missed_deadline_t*/);
+    printf("%sTASK <%s> STATISTICS : {\n\tAverage Response Time: %.2f\n\tAverage Wait Time: %.2f\n\t%sDeadline missed: %d\n\tTime of first missed deadline: %d\n%s}%s\n", 
+           BOLDWHITE, this->name, m_statistics.average_response_time, m_statistics.average_wait_time, BOLDRED, m_statistics.deadlines_missed, m_statistics.first_deadline_missed_t, RESET, RESET/*, m_statistics.average_missed_deadline_t*/);
 }
