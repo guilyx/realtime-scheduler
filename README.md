@@ -9,7 +9,7 @@
 
 # Real-Time Scheduler
 
-A C++ implementation of a scheduling simulator
+A C++ implementation of a scheduling simulator (very unefficient memory-wise but it's not the point)
 
 ## Overview
 
