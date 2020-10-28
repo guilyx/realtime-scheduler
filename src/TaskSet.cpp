@@ -74,22 +74,21 @@ void TaskSet::schedule(int scheduler) {
                     m_hyper_period = m_hyper_period*3;
                     std::vector<const char*> tempVec(m_hyper_period, "");
                     m_time_table = tempVec;
-                }
-                else exit(1);
+                } else exit(1);
             }
+            this->compute_time_table();
+            std::cout << BOLDGREEN << "Schedule successfully computed." << RESET << std::endl;
             break;
         case DEADLINE_MONOTONIC:
-            std::cout << "Scheduler not supported yet" << std::endl;
+            std::cout << BOLDRED << "Scheduler not supported yet" << RESET << std::endl;
             break;
         case EARLIEST_DEADLINE_FIRST:
-            std::cout << "Scheduler not supported yet" << std::endl;
+            std::cout << BOLDRED << "Scheduler not supported yet" << RESET << std::endl;
             break;
         default:
-            std::cout << "Scheduler not supported yet" << std::endl;
+            std::cout << BOLDRED << "Scheduler not supported yet" << RESET << std::endl;
             break;
     }
-    this->compute_time_table();
-    std::cout << BOLDGREEN << "Schedule successfully computed." << RESET << std::endl;
 }
 
 std::vector<const char*> TaskSet::get_time_table() const {
