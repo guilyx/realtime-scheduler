@@ -2,6 +2,11 @@
 
 TaskSet::TaskSet() {}
 
+/**
+ * @brief register a task in the set
+ * 
+ * @param tsk 
+ */
 void TaskSet::register_task(Task tsk) {
     if (m_tasks.find(tsk.name) == m_tasks.end()) {
         // Task not registered, free to go
@@ -14,6 +19,11 @@ void TaskSet::register_task(Task tsk) {
     }
 }
 
+/**
+ * @brief remove a task from the set
+ * 
+ * @param task_id 
+ */
 void TaskSet::remove_task(const char* task_id) {
     if (m_tasks.find(task_id) == m_tasks.end()) {
         printf("%sTask <%s> has not been registered, failed to remove.\n%s", BOLDRED, task_id, RESET);
@@ -25,6 +35,10 @@ void TaskSet::remove_task(const char* task_id) {
     }   
 }
 
+/**
+ * @brief compute hyper period of the set
+ * 
+ */
 void TaskSet::compute_hyper_period() {
     int hyper_periods[m_number_of_tasks];
     int i = 0;
@@ -37,14 +51,28 @@ void TaskSet::compute_hyper_period() {
     m_time_table = tempVec;
 }
 
+/**
+ * @brief get the task set
+ * 
+ * @return std::map<const char*, Task> 
+ */
 std::map<const char*, Task> TaskSet::get_task_set() const {
     return m_tasks;
 }
 
+/**
+ * @brief get number of tasks registered
+ * 
+ * @return int 
+ */
 int TaskSet::get_number_of_tasks() const {
     return m_number_of_tasks;
 }
 
+/**
+ * @brief tasks set printer
+ * 
+ */
 void TaskSet::print_task_set() {
     printf("%s=======================\n", BOLDWHITE);
     printf("TASK SET {\n");
@@ -56,6 +84,11 @@ void TaskSet::print_task_set() {
     printf("%s}\n=======================\n%s", RESET, RESET);
 }
 
+/**
+ * @brief schedule task set according to a chosen policy
+ * 
+ * @param scheduler 
+ */
 void TaskSet::schedule(int scheduler) {
     std::cout << BOLDYELLOW << "Scheduling the tasks..." << RESET << std::endl;
     bool ok;
@@ -91,10 +124,19 @@ void TaskSet::schedule(int scheduler) {
     }
 }
 
+/**
+ * @brief get availability time table
+ * 
+ * @return std::vector<const char*> 
+ */
 std::vector<const char*> TaskSet::get_time_table() const {
     return m_time_table;
 }
 
+/**
+ * @brief compute availability time table (schedule)
+ * 
+ */
 void TaskSet::compute_time_table() {
     for (int tsk=0; tsk<m_priority_vector.size(); ++tsk) {
         std::vector<int> response_time;
@@ -158,6 +200,11 @@ void TaskSet::compute_time_table() {
     }
 }
 
+/**
+ * @brief compute priorities according to a chosen policy
+ * 
+ * @param scheduler 
+ */
 void TaskSet::compute_priorities(int scheduler) {
     if (scheduler == RATE_MONOTONIC) {
         RateMonotonic rm = RateMonotonic();
@@ -170,6 +217,13 @@ void TaskSet::compute_priorities(int scheduler) {
     }
 }
 
+/**
+ * @brief compute sufficient condition according to the chosen policy
+ * 
+ * @param scheduler 
+ * @return true 
+ * @return false 
+ */
 bool TaskSet::compute_sufficient_condition(int scheduler) {
     double condition;
     double processor_charge = 0;
@@ -196,6 +250,10 @@ bool TaskSet::compute_sufficient_condition(int scheduler) {
     }
 }
 
+/**
+ * @brief print statistics of each task in the set
+ * 
+ */
 void TaskSet::print_statistics() const {
     printf("%s=======================%s\n", BOLDBLUE, RESET);
     for (auto &pair : m_tasks) {
@@ -204,6 +262,10 @@ void TaskSet::print_statistics() const {
     printf("%s=======================%s\n", BOLDBLUE, RESET);
 }
 
+/**
+ * @brief ugly schedule printer
+ * 
+ */
 void TaskSet::print_schedule() const {
     printf("\n==SCHEDULE==\n");
     for ( auto &pair : m_tasks ) {
