@@ -21,10 +21,15 @@ static bool rateMonotonicSorter(Task tsk1, Task tsk2) {
 /**
  * @brief 
  * 
- * @param a 
- * @param b 
- * @return int 
+ * @param tsk1 
+ * @param tsk2 
+ * @return true 
+ * @return false 
  */
+static bool deadlineMonotonicSorter(Task tsk1, Task tsk2) {
+    return tsk1.get_deadline() < tsk2.get_deadline();
+}
+
 static int gcd(int a, int b) 
 { 
     if (b == 0) 
@@ -32,15 +37,8 @@ static int gcd(int a, int b)
     return gcd(b, a % b); 
 } 
 
-/**
- * @brief 
- * 
- * @param arr 
- * @return int 
- */
-static int findlcm(int arr[]) 
+static int findlcm(int arr[], int n) 
 { 
-    int n = sizeof(int*) / sizeof(arr[0]); 
     int ans = arr[0]; 
   
     for (int i = 1; i < n; i++) 

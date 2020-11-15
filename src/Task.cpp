@@ -16,6 +16,7 @@ Task::Task(const char* name, int offset, int computation, int period, int deadli
     m_offset = offset;
     m_period = period;
     m_utilization = double(computation)/double(period);
+    m_ch = double(computation)/double(deadline);
 }
 
 /**
@@ -61,6 +62,15 @@ int Task::get_deadline() const {
  */
 double Task::get_utilization() const {
     return m_utilization;
+}
+
+/**
+ * @brief get ch factor
+ * 
+ * @return double 
+ */
+double Task::get_ch() const {
+    return m_ch;
 }
 
 /**

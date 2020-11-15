@@ -46,7 +46,8 @@ void TaskSet::compute_hyper_period() {
         hyper_periods[i] = val.get_period();
         ++i;
     }
-    m_hyper_period = findlcm(hyper_periods);
+    int n = sizeof(hyper_periods) / sizeof(hyper_periods[0]); 
+    m_hyper_period = findlcm(hyper_periods, n);
     std::vector<const char*> tempVec(m_hyper_period, "");
     m_time_table = tempVec;
 }
@@ -92,35 +93,63 @@ void TaskSet::print_task_set() {
 void TaskSet::schedule(int scheduler) {
     std::cout << BOLDYELLOW << "Scheduling the tasks..." << RESET << std::endl;
     bool ok;
+    double processor_charge = 0;
+    double ch = 0;
+    for (auto it = m_tasks.cbegin(); it != m_tasks.cend(); ++it) {
+        processor_charge += (it->second).get_utilization();
+        ch += (it->second).get_ch();
+    }
+    if (processor_charge > 1) {
+        std::cout << BOLDRED << "The Task Set is not schedulable." << RESET; 
+        exit(EXIT_FAILURE);
+    }
     switch(scheduler) {
-        case RATE_MONOTONIC:
-            ok = this->compute_sufficient_condition(scheduler);
+        case RATE_MONOTONIC: {
+            auto rm = RateMonotonic();
+            
+            ok = rm.compute_sufficient_condition(this->m_number_of_tasks, processor_charge);
             if (ok) {
-                this->compute_priorities(scheduler);
+                this->m_tasks = rm.prioritize(this->m_tasks);
+                this->m_priority_vector = rm.get_prioritized_tasks();
                 std::cout << BOLDGREEN << "Priorities of the task set have been computed successfully." << RESET << std::endl;
             } else {
                 int yn;
-                std::cout << BOLDRED << "The current Task Set is not schedulable by RMS. Do you still want to schedule it with RMS ? 1/0 --- " << RESET; 
+                std::cout << BOLDRED << "The current Task Set might not be schedulable by RMS. Do you still want to try scheduling it with RMS ? 1/0 --- " << RESET; 
                 std::cin >> yn;
                 if (yn == 1) {
-                    this->compute_priorities(scheduler);
-                    m_hyper_period = m_hyper_period*3;
-                    std::vector<const char*> tempVec(m_hyper_period, "");
-                    m_time_table = tempVec;
+                    this->m_tasks = rm.prioritize(this->m_tasks);
+                    this->m_priority_vector = rm.get_prioritized_tasks();
                 } else exit(1);
             }
             this->compute_time_table();
             std::cout << BOLDGREEN << "Schedule successfully computed." << RESET << std::endl;
-            break;
-        case DEADLINE_MONOTONIC:
+        } break;
+        case DEADLINE_MONOTONIC: {
+            auto dm = DeadlineMonotonic();
+            
+            ok = dm.compute_sufficient_condition(this->m_number_of_tasks, ch);
+            if (ok) {
+                this->m_tasks = dm.prioritize(this->m_tasks);
+                this->m_priority_vector = dm.get_prioritized_tasks();
+                std::cout << BOLDGREEN << "Priorities of the task set have been computed successfully." << RESET << std::endl;
+            } else {
+                int yn;
+                std::cout << BOLDRED << "The current Task Set might not be schedulable by DMS. Do you still want to try scheduling it with RMS ? 1/0 --- " << RESET; 
+                std::cin >> yn;
+                if (yn == 1) {
+                    this->m_tasks = dm.prioritize(this->m_tasks);
+                    this->m_priority_vector = dm.get_prioritized_tasks();
+                } else exit(1);
+            }
+            this->compute_time_table();
+            std::cout << BOLDGREEN << "Schedule successfully computed." << RESET << std::endl;
+        } break;
+        case EARLIEST_DEADLINE_FIRST: {
             std::cout << BOLDRED << "Scheduler not supported yet" << RESET << std::endl;
-            break;
-        case EARLIEST_DEADLINE_FIRST:
+        } break;
+        default: {
             std::cout << BOLDRED << "Scheduler not supported yet" << RESET << std::endl;
-            break;
-        default:
-            std::cout << BOLDRED << "Scheduler not supported yet" << RESET << std::endl;
-            break;
+        } break;
     }
 }
 
@@ -146,7 +175,7 @@ void TaskSet::compute_time_table() {
         for (int p=0; p<m_hyper_period; ++p) {
             int period = p*m_priority_vector[tsk].get_period() + m_priority_vector[tsk].get_offset();
             int deadline = (p+1)*m_priority_vector[tsk].get_deadline() + m_priority_vector[tsk].get_offset();
-            if (period > m_hyper_period) {
+            if (period >= m_hyper_period) {
                 break;
             }
             activations_rank.push_back(period);
@@ -159,7 +188,13 @@ void TaskSet::compute_time_table() {
             int init_activation = elem;
             bool mutual_excl = false;
             for (int j=0; j<m_priority_vector[tsk].get_computation(); ++j) {
-                while (m_time_table[elem+j] != "") elem++;
+                while (m_time_table[elem+j] != "") {
+                    if (elem+1+j >= m_hyper_period) {
+                        std::cout << BOLDRED << "Failed to schedule task set" << RESET << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
+                    elem++;
+                }
                 if (elem + j > m_hyper_period) {
                     response_time.pop_back();
                     waiting_time.pop_back();
@@ -197,56 +232,6 @@ void TaskSet::compute_time_table() {
             double awt = std::accumulate(waiting_time.begin(), waiting_time.end(), 0) / waiting_time.size();
             m_tasks.at(m_priority_vector[tsk].name).set_average_waiting_time(awt);
         }
-    }
-}
-
-/**
- * @brief compute priorities according to a chosen policy
- * 
- * @param scheduler 
- */
-void TaskSet::compute_priorities(int scheduler) {
-    if (scheduler == RATE_MONOTONIC) {
-        RateMonotonic rm = RateMonotonic();
-        m_tasks = rm.prioritize(m_tasks);
-        m_priority_vector = rm.get_prioritized_tasks();
-    } else if (scheduler == DEADLINE_MONOTONIC) {
-        std::cout << "Scheduler not supported yet" << std::endl;
-    } else {
-        std::cout << "Scheduler not supported yet" << std::endl;
-    }
-}
-
-/**
- * @brief compute sufficient condition according to the chosen policy
- * 
- * @param scheduler 
- * @return true 
- * @return false 
- */
-bool TaskSet::compute_sufficient_condition(int scheduler) {
-    double condition;
-    double processor_charge = 0;
-    for (auto it = m_tasks.cbegin(); it != m_tasks.cend(); ++it) {
-        processor_charge += (it->second).get_utilization();
-    }
-    switch(scheduler) {
-        case RATE_MONOTONIC:
-            condition = m_number_of_tasks*(pow(2, 1.0/m_number_of_tasks) - 1);
-            if (processor_charge != 0 && processor_charge <= condition) {
-                return true;
-            } else {
-                return false;
-            }
-        case DEADLINE_MONOTONIC:
-            std::cout << "Scheduler not supported yet" << std::endl;
-            return false;
-        case EARLIEST_DEADLINE_FIRST:
-            std::cout << "Scheduler not supported yet" << std::endl;
-            return false;
-        default:
-            std::cout << "Scheduler not supported yet" << std::endl;
-            return false;
     }
 }
 

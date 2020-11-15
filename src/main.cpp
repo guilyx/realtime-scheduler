@@ -111,8 +111,7 @@ int main(int argc, char *argv[])
                     state = 4;
                 } else if (q == "dm") {
                     ts.schedule(DEADLINE_MONOTONIC);
-                    state = 3;
-                    std::cout << "Choose rm" << std::endl;
+                    state = 4;
                 } else if (q == "edf") {
                     ts.schedule(EARLIEST_DEADLINE_FIRST);
                     state = 3;

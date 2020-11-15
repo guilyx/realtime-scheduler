@@ -40,6 +40,7 @@ class Task {
         int get_deadline() const;
         int get_priority() const;
         double get_utilization() const;
+        double get_ch() const;
 
         bool get_ready() const;
         const void set_ready(bool r);
@@ -74,6 +75,7 @@ class Task {
         int m_execution_time;
         int m_absolute_deadline;
         int m_arrival_time;
+        double m_ch;
         double m_utilization;
         TaskStatistics m_statistics;
 };

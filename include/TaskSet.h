@@ -2,6 +2,7 @@
 #define TASK_SET_H
 
 #include "RateMonotonic.h"
+#include "DeadlineMonotonic.h"
 #include "vector"
 #include <numeric>
 
@@ -28,9 +29,7 @@ class TaskSet {
         std::vector<Task> m_priority_vector;
         int m_number_of_tasks = 0;
         int m_hyper_period;
-        void compute_priorities(int scheduler);
         void compute_time_table();
-        bool compute_sufficient_condition(int scheduler);
         void compute_hyper_period();
 };
 
